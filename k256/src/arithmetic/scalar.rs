@@ -343,7 +343,7 @@ impl PrimeField for Scalar {
     }
 }
 
-#[cfg(feature = "bits")]
+#[cfg(all(feature = "bits", not(target_os = "zkvm")))]
 impl PrimeFieldBits for Scalar {
     #[cfg(target_pointer_width = "32")]
     type ReprBits = [u32; 8];
@@ -735,7 +735,7 @@ impl<'a> Product<&'a Scalar> for Scalar {
     }
 }
 
-#[cfg(feature = "bits")]
+#[cfg(all(feature = "bits", not(target_os = "zkvm")))]
 impl From<&Scalar> for ScalarBits {
     fn from(scalar: &Scalar) -> ScalarBits {
         scalar.0.to_words().into()

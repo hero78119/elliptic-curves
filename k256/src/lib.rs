@@ -27,7 +27,7 @@
 //!
 //! Please see type-specific documentation for more information.
 
-#[cfg(feature = "alloc")]
+#[cfg(any(feature = "alloc", target_os = "zkvm"))]
 #[allow(unused_imports)]
 #[macro_use]
 extern crate alloc;
@@ -50,7 +50,7 @@ pub mod test_vectors;
 pub use elliptic_curve::{self, bigint::U256};
 
 #[cfg(feature = "arithmetic")]
-pub use arithmetic::{affine::AffinePoint, projective::ProjectivePoint, scalar::Scalar};
+pub use arithmetic::{AffinePoint, ProjectivePoint, Scalar};
 
 #[cfg(feature = "expose-field")]
 pub use arithmetic::FieldElement;
