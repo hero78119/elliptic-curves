@@ -125,6 +125,7 @@ impl Scalar {
     }
 
     /// Inverts the scalar.
+    #[cfg(not(target_os = "zkvm"))]
     pub fn invert(&self) -> CtOption<Self> {
         // Using an addition chain from
         // https://briansmith.org/ecc-inversion-addition-chains-01#secp256k1_scalar_inversion
@@ -173,6 +174,35 @@ impl Scalar {
             .pow2k(8).mul(&x6);
 
         CtOption::new(res, !self.is_zero())
+    }
+
+    #[cfg(target_os = "zkvm")]
+    pub fn invert(&self) -> CtOption<Self> {
+        if self.is_zero().into() {
+            return CtOption::new(Self::ZERO, 0.into());
+        }
+
+        let buf = self.to_bytes();           // [u8; 32]
+        let mut words = [0u32; 8];
+
+        // reinterpret the 32-byte field element as 8 words
+        for (i, chunk) in buf.chunks_exact(4).enumerate() {
+            words[i] = u32::from_le_bytes(chunk.try_into().unwrap());
+        }
+
+        // call zkvm hook, will mutate `words`
+        crate::call_secp256k1_invert_hook(&mut words);
+
+        let bytes32: &[u8; 32] = unsafe {
+            &*(words[..8].as_ptr() as *const [u8; 32])
+        };
+        let result = FieldBytes::from_slice(bytes32);
+        let result = Self::from_repr(*result).unwrap();
+
+        CtOption::new(
+            result,
+            Choice::from(1)
+        )
     }
 
     /// Returns the scalar modulus as a `BigUint` object.
@@ -254,6 +284,7 @@ impl Field for Scalar {
     /// Tonelli-Shank's algorithm for q mod 16 = 1
     /// <https://eprint.iacr.org/2012/685.pdf> (page 12, algorithm 5)
     #[allow(clippy::many_single_char_names)]
+    #[cfg(not(target_os = "zkvm"))]
     fn sqrt(&self) -> CtOption<Self> {
         // Note: `pow_vartime` is constant-time with respect to `self`
         let w = self.pow_vartime([
@@ -291,6 +322,37 @@ impl Field for Scalar {
         }
 
         CtOption::new(x, x.square().ct_eq(self))
+    }
+
+    #[cfg(target_os = "zkvm")]
+    fn sqrt(&self) -> CtOption<Self> {
+        panic!("asad");
+        if self.is_zero().into() {
+            return CtOption::new(Self::ZERO, 1.into());
+        }
+
+        let mut buf = self.to_bytes();           // [u8; 32]
+        let mut words = [0u32; 9];
+
+        // reinterpret the 32-byte field element as 8 words
+        for (i, chunk) in buf.chunks_exact(4).enumerate() {
+            words[i] = u32::from_le_bytes(chunk.try_into().unwrap());
+        }
+
+        // call zkvm hook, will mutate `words`
+        crate::call_secp256k1_sqrt_hook(&mut words);
+
+        // --- extract result (first 8 u32 = 32 bytes) ---
+        let bytes32: &[u8; 32] = unsafe {
+            &*(words[..8].as_ptr() as *const [u8; 32])
+        };
+        let result = FieldBytes::from_slice(bytes32);
+        let result = Self::from_repr(*result).unwrap();
+
+        // --- extract status (last u32 -> lowest byte) ---
+        let status_u8 = (words[8] & 0xFF) as u8;
+
+        CtOption::new(result, Choice::from(status_u8))
     }
 
     fn sqrt_ratio(num: &Self, div: &Self) -> (Choice, Self) {

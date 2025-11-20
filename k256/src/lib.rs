@@ -6,7 +6,7 @@
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg"
 )]
 #![allow(clippy::needless_range_loop)]
-#![forbid(unsafe_code)]
+// #![forbid(unsafe_code)]
 #![warn(
     clippy::mod_module_files,
     clippy::unwrap_used,
@@ -47,6 +47,7 @@ pub mod schnorr;
 #[cfg(any(feature = "test-vectors", test))]
 pub mod test_vectors;
 
+use alloc::vec::Vec;
 pub use elliptic_curve::{self, bigint::U256};
 
 #[cfg(feature = "arithmetic")]
@@ -157,3 +158,36 @@ impl elliptic_curve::sec1::ValidatePublicKey for Secp256k1 {}
 /// Bit representation of a secp256k1 (K-256) scalar field element.
 #[cfg(feature = "bits")]
 pub type ScalarBits = elliptic_curve::scalar::ScalarBits<Secp256k1>;
+
+
+pub const SECP256K1_SCALAR_SQRT: u32 = 0x00_00_01_0D;
+pub const SECP256K1_SCALAR_INVERT: u32 = 0x00_00_01_0E;
+
+use core::arch::asm;
+#[cfg(target_os = "zkvm")]
+#[allow(unsafe_code)]
+pub(crate) fn call_secp256k1_sqrt_hook(p: &mut [u32; 9]) {
+    unsafe {
+        let p = p.as_mut_ptr();
+        asm!(
+        "ecall",
+        in("t0") SECP256K1_SCALAR_SQRT,
+        in("a0") p,
+        in("a1") 0
+        );
+    }
+}
+
+#[cfg(target_os = "zkvm")]
+#[allow(unsafe_code)]
+pub(crate) fn call_secp256k1_invert_hook(p: &mut [u32; 8]) {
+    unsafe {
+        let p = p.as_mut_ptr();
+        asm!(
+        "ecall",
+        in("t0") SECP256K1_SCALAR_INVERT,
+        in("a0") p,
+        in("a1") 0
+        );
+    }
+}
