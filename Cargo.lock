@@ -164,7 +164,7 @@ dependencies = [
 [[package]]
 name = "ceno_crypto_primitives"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/ceno#4a9dff21fd408e93c21edb6e874a09b0171b0c8b"
+source = "git+https://github.com/scroll-tech/ceno-patch.git?branch=main#6a71aabe9190bbd706ca52afa2324e496c3abb64"
 dependencies = [
  "ceno_syscall",
  "elliptic-curve",
@@ -173,7 +173,7 @@ dependencies = [
 [[package]]
 name = "ceno_syscall"
 version = "0.1.0"
-source = "git+https://github.com/scroll-tech/ceno#4a9dff21fd408e93c21edb6e874a09b0171b0c8b"
+source = "git+https://github.com/scroll-tech/ceno-patch.git?branch=main#6a71aabe9190bbd706ca52afa2324e496c3abb64"
 
 [[package]]
 name = "cfg-if"
