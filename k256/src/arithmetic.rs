@@ -24,16 +24,17 @@ mod zkvm {
     use elliptic_curve::{FieldBytes, subtle::CtOption};
     use super::{Secp256k1, FieldElement, scalar};
 
-    /// SP1 AffinePoint
-    pub type AffinePoint = ceno_crypto_primitives::ecdsa::AffinePoint<Secp256k1>;
-    /// SP1 ProjectivePoint
-    pub type ProjectivePoint = ceno_crypto_primitives::ecdsa::ProjectivePoint<Secp256k1>;
-    /// SP1 Scalar
+    /// patched ecc with ceno primitives
+    /// Ceno AffinePoint
+    pub type AffinePoint = ceno_crypto_primitives::ecdsa::CenoAffinePoint<Secp256k1>;
+    /// Ceno ProjectivePoint
+    pub type ProjectivePoint = ceno_crypto_primitives::ecdsa::CenoProjectivePoint<Secp256k1>;
+    /// Ceno Scalar
     pub type Scalar = scalar::Scalar;
 
     impl ceno_crypto_primitives::ecdsa::ECDSACurve for Secp256k1 {
         type FieldElement = FieldElement;
-        type SP1AffinePoint = ceno_crypto_primitives::secp256k1::Secp256k1Point;
+        type SP1AffinePoint = ceno_crypto_primitives::secp256k1::CenoSecp256k1Point;
 
         /// a = 0
         const EQUATION_A: FieldElement = FieldElement::from_bytes_unchecked(&[
