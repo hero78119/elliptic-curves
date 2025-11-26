@@ -34,8 +34,7 @@ serdect = { version = "0.2", optional = true, default-features = false }
 sha2 = { version = "0.10", optional = true, default-features = false }
 signature = { version = "2", optional = true }
 
-[target.'cfg(target_os = "zkvm")'.dependencies]
-ceno_crypto_primitives = { git = "https://github.com/scroll-tech/ceno-patch.git", package = "ceno_crypto_primitives", branch = "main", default-features = false }
+ceno_crypto_primitives = { git = "https://github.com/scroll-tech/ceno-patch.git", package = "ceno_crypto_primitives", branch = "main", default-features = false, optional = true }
 hex = "=0.4"
 
 [dev-dependencies]
@@ -62,7 +61,7 @@ default = [
 ]
 alloc = ["ecdsa-core?/alloc", "elliptic-curve/alloc"]
 std = ["alloc", "ecdsa-core?/std", "elliptic-curve/std", "once_cell?/std"]
-profiling = []
+profiling = ["ceno_crypto_primitives/profiling"]
 
 arithmetic = ["elliptic-curve/arithmetic"]
 bits = ["arithmetic", "elliptic-curve/bits"]
