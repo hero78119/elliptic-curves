@@ -7,6 +7,8 @@ mod wide;
 pub(crate) use self::wide::WideScalar;
 
 use crate::{FieldBytes, Secp256k1, WideBytes, ORDER, ORDER_HEX};
+#[cfg(feature = "profiling")]
+use ceno_syscall::syscall_phantom_log_pc_cycle;
 use core::{
     iter::{Product, Sum},
     ops::{Add, AddAssign, Mul, MulAssign, Neg, Shr, ShrAssign, Sub, SubAssign},
@@ -126,6 +128,8 @@ impl Scalar {
 
     /// Inverts the scalar.
     pub fn invert(&self) -> CtOption<Self> {
+        #[cfg(feature = "profiling")]
+        syscall_phantom_log_pc_cycle("invert start");
         // Using an addition chain from
         // https://briansmith.org/ecc-inversion-addition-chains-01#secp256k1_scalar_inversion
         let x_1 = *self;
@@ -172,6 +176,8 @@ impl Scalar {
             .pow2k(6).mul(&x_1)
             .pow2k(8).mul(&x6);
 
+        #[cfg(feature = "profiling")]
+        syscall_phantom_log_pc_cycle("invert end");
         CtOption::new(res, !self.is_zero())
     }
 
@@ -255,6 +261,8 @@ impl Field for Scalar {
     /// <https://eprint.iacr.org/2012/685.pdf> (page 12, algorithm 5)
     #[allow(clippy::many_single_char_names)]
     fn sqrt(&self) -> CtOption<Self> {
+        #[cfg(feature = "profiling")]
+        syscall_phantom_log_pc_cycle("sqrt start");
         // Note: `pow_vartime` is constant-time with respect to `self`
         let w = self.pow_vartime([
             0x777fa4bd19a06c82,
@@ -290,6 +298,8 @@ impl Field for Scalar {
             v = k;
         }
 
+        #[cfg(feature = "profiling")]
+        syscall_phantom_log_pc_cycle("sqrt end");
         CtOption::new(x, x.square().ct_eq(self))
     }
 

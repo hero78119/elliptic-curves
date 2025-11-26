@@ -4,7 +4,7 @@ use super::{tagged_hash, Signature, CHALLENGE_TAG};
 use crate::{AffinePoint, FieldBytes, ProjectivePoint, PublicKey, Scalar};
 use elliptic_curve::{
     bigint::U256,
-    group::{prime::PrimeCurveAffine},
+    group::prime::PrimeCurveAffine,
     ops::{LinearCombination, Reduce},
     point::DecompactPoint,
 };

@@ -62,6 +62,7 @@ default = [
 ]
 alloc = ["ecdsa-core?/alloc", "elliptic-curve/alloc"]
 std = ["alloc", "ecdsa-core?/std", "elliptic-curve/std", "once_cell?/std"]
+profiling = []
 
 arithmetic = ["elliptic-curve/arithmetic"]
 bits = ["arithmetic", "elliptic-curve/bits"]

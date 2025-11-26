@@ -21,8 +21,8 @@ pub use self::{affine::AffinePoint, projective::ProjectivePoint, scalar::Scalar}
 
 #[cfg(target_os = "zkvm")]
 mod zkvm {
-    use elliptic_curve::{FieldBytes, subtle::CtOption};
-    use super::{Secp256k1, FieldElement, scalar};
+    use super::{scalar, FieldElement, Secp256k1};
+    use elliptic_curve::{subtle::CtOption, FieldBytes};
 
     /// patched ecc with ceno primitives
     /// Ceno AffinePoint
@@ -38,13 +38,11 @@ mod zkvm {
 
         /// a = 0
         const EQUATION_A: FieldElement = FieldElement::from_bytes_unchecked(&[
-            0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0,
         ]);
 
-        const EQUATION_B: FieldElement = super::CURVE_EQUATION_B;  
+        const EQUATION_B: FieldElement = super::CURVE_EQUATION_B;
     }
 
     impl ceno_crypto_primitives::ecdsa::Field<Secp256k1> for FieldElement {
@@ -57,7 +55,7 @@ mod zkvm {
             // internally calls `normalize`
             FieldElement::to_bytes(self)
         }
-        
+
         fn normalize(self) -> Self {
             FieldElement::normalize(&self)
         }

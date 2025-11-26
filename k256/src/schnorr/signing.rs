@@ -9,7 +9,8 @@ use elliptic_curve::{
     ops::Reduce,
     rand_core::CryptoRngCore,
     subtle::ConditionallySelectable,
-    zeroize::{Zeroize, ZeroizeOnDrop}, PrimeField
+    zeroize::{Zeroize, ZeroizeOnDrop},
+    PrimeField,
 };
 use sha2::{Digest, Sha256};
 use signature::{
@@ -116,7 +117,7 @@ impl SigningKey {
 
         let secret_key = k.secret_key;
         let verifying_point = AffinePoint::from(k.verifying_key);
-        
+
         let (x, _) = verifying_point.field_elements();
         let r = x.normalize();
 
@@ -146,9 +147,7 @@ impl From<NonZeroScalar> for SigningKey {
         let affine = point.to_affine();
         let (_, y) = affine.field_elements();
 
-        let odd = y
-            .normalize()
-            .is_odd();
+        let odd = y.normalize().is_odd();
 
         secret_key.conditional_assign(&-secret_key, odd);
 
