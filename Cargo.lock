@@ -644,6 +644,7 @@ version = "0.13.4"
 dependencies = [
  "blobby",
  "ceno_crypto_primitives",
+ "ceno_syscall",
  "cfg-if",
  "criterion",
  "ecdsa 0.16.9 (git+https://github.com/sp1-patches/signatures.git?tag=patch-16.9-sp1-4.1.0)",
