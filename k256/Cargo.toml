@@ -38,6 +38,10 @@ ceno_crypto_primitives = { git = "https://github.com/scroll-tech/ceno-patch.git"
 ceno_syscall = { git = "https://github.com/scroll-tech/ceno-patch.git", package = "ceno_syscall", branch = "main", default-features = false}
 hex = "=0.4"
 
+#[patch."https://github.com/scroll-tech/ceno-patch.git"]
+#ceno_crypto_primitives = { path = "../../ceno-patch/crypto-primitives", package = "ceno_crypto_primitives" }
+#ceno_syscall = { path = "../../ceno-patch/syscall", package = "ceno_syscall" }
+
 [dev-dependencies]
 blobby = "0.3"
 criterion = "0.5"
