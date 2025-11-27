@@ -7,8 +7,6 @@ mod wide;
 pub(crate) use self::wide::WideScalar;
 
 use crate::{FieldBytes, Secp256k1, WideBytes, ORDER, ORDER_HEX};
-#[cfg(feature = "profiling")]
-use ceno_syscall::syscall_phantom_log_pc_cycle;
 use core::{
     iter::{Product, Sum},
     ops::{Add, AddAssign, Mul, MulAssign, Neg, Shr, ShrAssign, Sub, SubAssign},
@@ -126,10 +124,35 @@ impl Scalar {
         Self(self.0.shr_vartime(shift))
     }
 
-    /// Inverts the scalar.
+    #[cfg(target_os = "zkvm")]
     pub fn invert(&self) -> CtOption<Self> {
         #[cfg(feature = "profiling")]
-        syscall_phantom_log_pc_cycle("invert start");
+        ceno_syscall::syscall_phantom_log_pc_cycle("invert start");
+        if self.is_zero().into() {
+            return CtOption::new(Self::ZERO, 0.into());
+        }
+
+        let mut x = self.to_bytes();
+        let x_be_bytes: &mut [u8] = x.as_mut_slice();
+        let x_be_words: &mut [u32; 8] = unsafe {
+            &mut *(x_be_bytes.as_mut_ptr() as *mut [u32; 8])
+        };
+
+        // syscall, will mutate `words`
+        ceno_syscall::syscall_secp256k1_invert(x_be_words);
+        let x_inv = Self::from_repr(x).unwrap();
+
+        #[cfg(feature = "profiling")]
+        ceno_syscall::syscall_phantom_log_pc_cycle("invert end");
+        CtOption::new(
+            x_inv,
+            Choice::from(1)
+        )
+    }
+
+    #[cfg(not(target_os = "zkvm"))]
+    /// Inverts the scalar.
+    pub fn invert(&self) -> CtOption<Self> {
         // Using an addition chain from
         // https://briansmith.org/ecc-inversion-addition-chains-01#secp256k1_scalar_inversion
         let x_1 = *self;
@@ -175,9 +198,6 @@ impl Scalar {
             .pow2k(4).mul(&x_1001)
             .pow2k(6).mul(&x_1)
             .pow2k(8).mul(&x6);
-
-        #[cfg(feature = "profiling")]
-        syscall_phantom_log_pc_cycle("invert end");
         CtOption::new(res, !self.is_zero())
     }
 
@@ -262,7 +282,7 @@ impl Field for Scalar {
     #[allow(clippy::many_single_char_names)]
     fn sqrt(&self) -> CtOption<Self> {
         #[cfg(feature = "profiling")]
-        syscall_phantom_log_pc_cycle("sqrt start");
+        ceno_syscall::syscall_phantom_log_pc_cycle("sqrt start");
         // Note: `pow_vartime` is constant-time with respect to `self`
         let w = self.pow_vartime([
             0x777fa4bd19a06c82,
@@ -299,7 +319,7 @@ impl Field for Scalar {
         }
 
         #[cfg(feature = "profiling")]
-        syscall_phantom_log_pc_cycle("sqrt end");
+        ceno_syscall::syscall_phantom_log_pc_cycle("sqrt end");
         CtOption::new(x, x.square().ct_eq(self))
     }
 
